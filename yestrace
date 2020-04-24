@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ARGUMENT=$1
+
+case $ARGUMENT in
+  install)
+    apt-get -y update && \
+    apt-get -y install curl strace wget unzip sysstat
+
+    wget -q -O /tmp/websocketd.zip \
+    https://github.com/joewalnes/websocketd/releases/download/v0.3.0/websocketd-0.3.0-linux_386.zip \
+    && unzip /tmp/websocketd.zip -d /tmp/websocketd && mv /tmp/websocketd/websocketd /usr/bin \
+    && chmod +x /usr/bin/websocketd
+
+    echo "--- YESTRACE INSTALLED ---" 
+  ;;
+
+  run)
+    process=${@:2}
+    echo "running ${process}"
+
+    eval "$process &" 
+    strace -ttttTfqyyyp $! -o dump/output.dump &
+    
+    websocketd --port=8081 iostat -xc 1 > /dev/null &
+    websocketd --port=8080 tail -f dump/output.dump > /dev/null
+  ;;
+
+  *)
+    echo "No arguments passed."
+    echo "yestrace run OR yestrace install"
+  ;;
+esac

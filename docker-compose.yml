@@ -1,0 +1,15 @@
+version: "3.6"
+services:
+  yestrace: 
+    build: .
+    volumes:
+      - ./:/app
+    cap_add:
+      - sys_ptrace
+      - sys_admin
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ports:
+      - "8080:8080"
+      - "8081:8081"
